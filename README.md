@@ -16,13 +16,7 @@ A minimal protocol for secure agent discovery, authentication, and communication
 - **Flexible** - Support any serializable Python data
 - **Fast** - In-memory environment for real-time discovery
 
-## Quick Start
-
-```bash
-pip install the-ment
-```
-
-### Create an Identity
+## Create an Identity
 
 ```python
 from ment import create_identity
@@ -32,7 +26,7 @@ print(f"Agent ID: {identity.id}")
 unlocked = identity.unlock("my-password")
 ```
 
-### Sign and Verify
+## Sign and Verify
 
 ```python
 from ment import create_identity, verify_signature
@@ -45,7 +39,7 @@ is_valid = verify_signature(identity.public_key, {"action": "transfer"}, signatu
 print(f"Valid: {is_valid}")  # True
 ```
 
-### Multi-Agent Communication
+## Multi-Agent Communication
 
 ```python
 from ment import create_identity, Environment
