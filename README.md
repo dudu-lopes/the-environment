@@ -1,3 +1,5 @@
+pip install the-ment
+
 # The Environment
 
 pip install the-ment
