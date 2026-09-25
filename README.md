@@ -1,8 +1,8 @@
-pip install the-ment
-
 # The Environment
 
+```bash
 pip install the-ment
+```
 
 Portable, pseudonymous agent identities with Ed25519 cryptographic signatures.
 
