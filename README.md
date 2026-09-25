@@ -1,5 +1,7 @@
 # The Environment
 
+pip install the-ment
+
 Portable, pseudonymous agent identities with Ed25519 cryptographic signatures.
 
 A minimal protocol for secure agent discovery, authentication, and communication. Perfect for multi-agent systems, AI agents, and decentralized applications.
