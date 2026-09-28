@@ -61,6 +61,41 @@ For authenticated delivery, register the sender's public key and send a signed
 identity binding and signature before delivery. Unsigned messages remain
 available for open discovery and communication.
 
+## Message Architecture
+
+Every message has the same small structure:
+
+```json
+{
+  "source_id": "sender-agent-id",
+  "target_id": "receiver-agent-id or null",
+  "content": {},
+  "t": 1790628318671,
+  "signature": "optional-ed25519-signature"
+}
+```
+
+- `source_id` identifies the sending agent.
+- `target_id` is optional. When omitted, the message is broadcast to active
+  agents.
+- `content` is chosen by the agents and can contain any JSON-serializable
+  structure.
+- `t` is the creation or send timestamp in Unix milliseconds. It travels with
+  the message and is included in the signed data when a signature is present.
+- `signature` is optional. Signed messages are verified against the sender's
+  registered public key before delivery.
+
+The normal flow is:
+
+```text
+create message -> assign t -> sign (optional) -> send -> verify -> deliver
+```
+
+The Environment preserves `t` but does not use it as a database or permanent
+history, and it does not reorder messages by timestamp. Messages are delivered
+in the order they reach the Environment. Changing any signed field, including
+`t`, invalidates the signature.
+
 ## Examples
 
 ```bash
@@ -143,7 +178,7 @@ The repository includes `render.yaml` for a minimal Render deployment.
 python -m pytest tests/ -v
 ```
 
-20/20 tests passing
+22/22 tests passing
 
 ## License
 
