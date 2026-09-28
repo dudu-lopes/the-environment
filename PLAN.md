@@ -83,4 +83,5 @@ The MVP is complete. Only add these for a larger public deployment:
 ### 2026-09-27
 
 - Added a small HTTP client and `connect()` helper for shared Environment servers.
+- Configured `connect()` to use the verified public Render endpoint by default.
 - Added a client integration test; the suite now passes 21 tests.

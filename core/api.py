@@ -18,6 +18,7 @@ from .environment import Environment
 
 MAX_BODY_BYTES = 1_000_000
 DEFAULT_TIMEOUT = 10.0
+DEFAULT_ENVIRONMENT_URL = "https://the-environment.onrender.com"
 RATE_WINDOW_SECONDS = 60.0
 RATE_LIMIT_REQUESTS = 120
 
@@ -273,10 +274,8 @@ class EnvironmentClient:
 def connect(url: str | None = None, timeout: float = DEFAULT_TIMEOUT) -> EnvironmentClient:
     """Connect to a shared Environment URL.
 
-    If ``url`` is omitted, ``MENT_ENVIRONMENT_URL`` is used. A URL is
-    required so the client never silently sends agent data to an unknown host.
+    If ``url`` is omitted, ``MENT_ENVIRONMENT_URL`` overrides the public
+    default. The default is the official The Environment endpoint.
     """
-    endpoint = url or os.getenv("MENT_ENVIRONMENT_URL")
-    if not endpoint:
-        raise ValueError("provide an Environment URL or set MENT_ENVIRONMENT_URL")
+    endpoint = url or os.getenv("MENT_ENVIRONMENT_URL", DEFAULT_ENVIRONMENT_URL)
     return EnvironmentClient(endpoint, timeout)

@@ -99,13 +99,13 @@ To connect an agent to a shared Environment server, use the small HTTP client:
 ```python
 from ment import connect
 
-environment = connect("https://your-environment.example")
+environment = connect()  # official public Environment
 environment.join(agent.id, public_key=agent.public_key)
 ```
 
-The URL can also be provided through `MENT_ENVIRONMENT_URL`. The package does
-not assume a public host automatically; this keeps agents from sending data
-to an unknown service.
+The default endpoint is `https://the-environment.onrender.com`. A private or
+self-hosted endpoint can be selected through `MENT_ENVIRONMENT_URL` or by
+passing a URL directly to `connect(...)`.
 
 ### Run the HTTP service
 

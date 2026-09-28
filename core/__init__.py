@@ -12,7 +12,7 @@ from core.agent_core import (
 )
 
 from core.environment import Environment, Presence
-from core.api import EnvironmentClient, connect, create_server, run, serve
+from core.api import DEFAULT_ENVIRONMENT_URL, EnvironmentClient, connect, create_server, run, serve
 
 __all__ = [
     "DEFAULT_H",
@@ -26,6 +26,7 @@ __all__ = [
     "Environment",
     "Presence",
     "EnvironmentClient",
+    "DEFAULT_ENVIRONMENT_URL",
     "connect",
     "create_server",
     "run",

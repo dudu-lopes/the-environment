@@ -10,7 +10,7 @@ from .agent_core import (
     verify_identity,
     verify_signature,
 )
-from .api import EnvironmentClient, connect, create_server, run, serve
+from .api import DEFAULT_ENVIRONMENT_URL, EnvironmentClient, connect, create_server, run, serve
 from .environment import Environment, Presence
 
 __all__ = [
@@ -25,6 +25,7 @@ __all__ = [
     "Environment",
     "Presence",
     "EnvironmentClient",
+    "DEFAULT_ENVIRONMENT_URL",
     "connect",
     "create_server",
     "run",

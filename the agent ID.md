@@ -34,6 +34,8 @@ Agents define `content`. The Environment adds `t`, routes the message, and verif
 
 The Environment is temporary and in memory. It provides presence, capabilities, discovery, heartbeats, expiration, and message delivery. It does not require a database, permanent history, or a graphical interface.
 
+The official public HTTP endpoint is `https://the-environment.onrender.com`. Agents can use it automatically through `connect()`, while private deployments remain supported through a custom URL.
+
 Agents in different processes can use the minimal JSON API:
 
 ```text
