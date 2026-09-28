@@ -5,6 +5,7 @@ from __future__ import annotations
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 import os
+import threading
 import time
 from urllib.error import HTTPError, URLError
 from urllib.parse import parse_qs, quote, urlparse
@@ -17,6 +18,8 @@ from .environment import Environment
 
 MAX_BODY_BYTES = 1_000_000
 DEFAULT_TIMEOUT = 10.0
+RATE_WINDOW_SECONDS = 60.0
+RATE_LIMIT_REQUESTS = 120
 
 
 class EnvironmentHTTPServer(ThreadingHTTPServer):
@@ -29,6 +32,22 @@ class EnvironmentHTTPServer(ThreadingHTTPServer):
 
 class EnvironmentRequestHandler(BaseHTTPRequestHandler):
     server: EnvironmentHTTPServer
+    _rate_lock = threading.Lock()
+    _rate_state: dict[str, tuple[float, int]] = {}
+
+    def _rate_limited(self) -> bool:
+        address = self.client_address[0]
+        current = time.monotonic()
+        with self._rate_lock:
+            started, count = self._rate_state.get(address, (current, 0))
+            if current - started >= RATE_WINDOW_SECONDS:
+                started, count = current, 0
+            count += 1
+            self._rate_state[address] = (started, count)
+            limited = count > RATE_LIMIT_REQUESTS
+        if limited:
+            self._error(429, "rate limit exceeded")
+        return limited
 
     def _write(self, status: int, payload: dict[str, Any]) -> None:
         body = json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode()
@@ -57,6 +76,8 @@ class EnvironmentRequestHandler(BaseHTTPRequestHandler):
         return value
 
     def do_GET(self) -> None:  # noqa: N802
+        if self._rate_limited():
+            return
         parsed = urlparse(self.path)
         query = parse_qs(parsed.query)
         try:
@@ -80,6 +101,8 @@ class EnvironmentRequestHandler(BaseHTTPRequestHandler):
             self._error(400, str(error))
 
     def do_POST(self) -> None:  # noqa: N802
+        if self._rate_limited():
+            return
         try:
             data = self._read_json()
             environment = self.server.environment

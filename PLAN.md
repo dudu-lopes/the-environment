@@ -59,7 +59,7 @@ The MVP is complete. Only add these for a larger public deployment:
 4. Hosting and operational monitoring.
 5. Execute the developer adoption plan in `GROWTH.md` before expanding the core.
 6. Deploy a public Environment endpoint and publish its URL for automatic client connection.
-7. Add rate limits before opening a public endpoint to untrusted traffic.
+7. Add authentication and abuse monitoring before scaling a public endpoint.
 
 ## Change log
 
@@ -78,6 +78,7 @@ The MVP is complete. Only add these for a larger public deployment:
 - Added deployment-ready `ment-server` command using `PORT` and `MENT_HOST`.
 - Added `/health` endpoint and deployment instructions.
 - Prepared package version `0.1.1` metadata and project URLs.
+- Added a small in-memory per-IP request limit for the public HTTP MVP.
 
 ### 2026-09-27
 
