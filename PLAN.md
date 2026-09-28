@@ -18,6 +18,8 @@ pip install the-ment
 - Presence, capabilities, discovery, heartbeat, and expiration.
 - Direct and broadcast messages with optional `target_id`.
 - Minimal JSON HTTP API.
+- Minimal `connect()` HTTP client for shared Environments.
+- Deployment-ready `ment-server` command and `/health` endpoint.
 - Public `ment` package namespace.
 - Runnable examples and automated tests.
 
@@ -35,6 +37,8 @@ from ment import Environment, create_identity, Message, serve
 - `examples/` - runnable examples.
 - `README.md` - usage documentation.
 - `the agent ID.md` - product specification.
+- `GROWTH.md` - developer adoption and open-source growth strategy.
+- `render.yaml` - minimal Render deployment configuration.
 - `pyproject.toml` - package metadata.
 
 ## Design decisions
@@ -53,6 +57,9 @@ The MVP is complete. Only add these for a larger public deployment:
 2. Key rotation and identity revocation.
 3. Production key-storage policy.
 4. Hosting and operational monitoring.
+5. Execute the developer adoption plan in `GROWTH.md` before expanding the core.
+6. Deploy a public Environment endpoint and publish its URL for automatic client connection.
+7. Add rate limits before opening a public endpoint to untrusted traffic.
 
 ## Change log
 
@@ -61,3 +68,18 @@ The MVP is complete. Only add these for a larger public deployment:
 - Added the `ment` public package namespace.
 - Updated examples and tests to use `ment` imports.
 - Named the PyPI distribution `the-ment`; the Python import remains `ment`.
+
+### 2026-09-25
+
+- Added `GROWTH.md` with research-based developer adoption, launch, and community guidance.
+
+### 2026-09-27 (HTTP deployment)
+
+- Added deployment-ready `ment-server` command using `PORT` and `MENT_HOST`.
+- Added `/health` endpoint and deployment instructions.
+- Prepared package version `0.1.1` metadata and project URLs.
+
+### 2026-09-27
+
+- Added a small HTTP client and `connect()` helper for shared Environment servers.
+- Added a client integration test; the suite now passes 21 tests.

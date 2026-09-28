@@ -82,6 +82,7 @@ serve(host="127.0.0.1", port=8765)
 Available endpoints:
 
 ```text
+GET  /health
 POST /join
 GET  /discover
 POST /send
@@ -92,6 +93,34 @@ POST /leave
 
 The API has no database or graphical interface. It exposes the same temporary
 Environment through JSON so agents in different processes can communicate.
+
+To connect an agent to a shared Environment server, use the small HTTP client:
+
+```python
+from ment import connect
+
+environment = connect("https://your-environment.example")
+environment.join(agent.id, public_key=agent.public_key)
+```
+
+The URL can also be provided through `MENT_ENVIRONMENT_URL`. The package does
+not assume a public host automatically; this keeps agents from sending data
+to an unknown service.
+
+### Run the HTTP service
+
+For a local service:
+
+```bash
+ment-server
+```
+
+For hosting platforms, the service listens on `0.0.0.0` and uses the `PORT`
+environment variable automatically. Use `pip install .` as the build command
+and `ment-server` as the start command. The `/health` endpoint can be used for
+health checks.
+
+The repository includes `render.yaml` for a minimal Render deployment.
 
 ## Architecture
 

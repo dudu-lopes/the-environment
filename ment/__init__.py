@@ -10,7 +10,7 @@ from .agent_core import (
     verify_identity,
     verify_signature,
 )
-from .api import create_server, serve
+from .api import EnvironmentClient, connect, create_server, run, serve
 from .environment import Environment, Presence
 
 __all__ = [
@@ -24,8 +24,11 @@ __all__ = [
     "verify_signature",
     "Environment",
     "Presence",
+    "EnvironmentClient",
+    "connect",
     "create_server",
+    "run",
     "serve",
 ]
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"

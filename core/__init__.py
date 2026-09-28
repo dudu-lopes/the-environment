@@ -12,7 +12,7 @@ from core.agent_core import (
 )
 
 from core.environment import Environment, Presence
-from core.api import create_server, serve
+from core.api import EnvironmentClient, connect, create_server, run, serve
 
 __all__ = [
     "DEFAULT_H",
@@ -25,8 +25,11 @@ __all__ = [
     "verify_signature",
     "Environment",
     "Presence",
+    "EnvironmentClient",
+    "connect",
     "create_server",
+    "run",
     "serve",
 ]
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"

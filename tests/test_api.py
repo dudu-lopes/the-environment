@@ -4,7 +4,7 @@ import unittest
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
-from ment import Message, create_identity, create_server
+from ment import Message, connect, create_identity, create_server
 
 
 class ApiTests(unittest.TestCase):
@@ -42,6 +42,9 @@ class ApiTests(unittest.TestCase):
         self.request("POST", "/leave", {"agent_id": agent_id})
         self.assertEqual(self.request("GET", "/discover?capability=search")["agents"], [])
 
+    def test_health(self) -> None:
+        self.assertEqual(self.request("GET", "/health"), {"status": "ok"})
+
     def test_signed_message_is_verified_and_delivered(self) -> None:
         sender = create_identity("api sender")
         receiver = create_identity("api receiver")
@@ -67,6 +70,23 @@ class ApiTests(unittest.TestCase):
         with self.assertRaises(HTTPError) as error:
             self.request("POST", "/send", payload)
         self.assertEqual(error.exception.code, 400)
+
+    def test_client_connects_to_shared_environment(self) -> None:
+        sender = create_identity("client sender")
+        receiver = create_identity("client receiver")
+        client = connect(self.base_url)
+        client.join(sender.id, public_key=sender.public_key)
+        client.join(receiver.id, public_key=receiver.public_key)
+        message = Message(
+            sender.id,
+            {"hello": "client"},
+            receiver.id,
+            t=100,
+        ).sign(sender.unlock("client sender"))
+        client.send_message(message)
+        received = client.receive(receiver.id)
+        self.assertEqual(received[0].content, {"hello": "client"})
+        self.assertTrue(received[0].verify(sender.public_key))
 
 
 if __name__ == "__main__":

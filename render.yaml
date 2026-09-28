@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: the-environment
+    runtime: python
+    plan: free
+    buildCommand: pip install .
+    startCommand: ment-server
+    healthCheckPath: /health
