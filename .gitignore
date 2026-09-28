@@ -136,3 +136,4 @@ Thumbs.db
 # Project specific
 .devin/
 *.local
+/GROWTH.md

@@ -37,7 +37,6 @@ from ment import Environment, create_identity, Message, serve
 - `examples/` - runnable examples.
 - `README.md` - usage documentation.
 - `the agent ID.md` - product specification.
-- `GROWTH.md` - developer adoption and open-source growth strategy.
 - `render.yaml` - minimal Render deployment configuration.
 - `pyproject.toml` - package metadata.
 
@@ -57,9 +56,8 @@ The MVP is complete. Only add these for a larger public deployment:
 2. Key rotation and identity revocation.
 3. Production key-storage policy.
 4. Hosting and operational monitoring.
-5. Execute the developer adoption plan in `GROWTH.md` before expanding the core.
-6. Deploy a public Environment endpoint and publish its URL for automatic client connection.
-7. Add authentication and abuse monitoring before scaling a public endpoint.
+5. Deploy a public Environment endpoint and publish its URL for automatic client connection.
+6. Add authentication and abuse monitoring before scaling a public endpoint.
 
 ## Change log
 
@@ -71,7 +69,6 @@ The MVP is complete. Only add these for a larger public deployment:
 
 ### 2026-09-25
 
-- Added `GROWTH.md` with research-based developer adoption, launch, and community guidance.
 
 ### 2026-09-27 (HTTP deployment)
 
