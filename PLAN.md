@@ -20,6 +20,7 @@ pip install the-ment
 - Minimal JSON HTTP API.
 - Minimal `connect()` HTTP client for shared Environments.
 - Deployment-ready `ment-server` command and `/health` endpoint.
+- Terminal UX with `ment init`, `ment login`, `ment status`, and `ment logout`.
 - Public `ment` package namespace.
 - Runnable examples and automated tests.
 
@@ -34,6 +35,7 @@ from ment import Environment, create_identity, Message, serve
 - `ment/` - public package namespace.
 - `core/` - implementation modules.
 - `tests/` - automated tests.
+- `core/cli.py` and `ment/cli.py` - terminal identity and connection commands.
 - `examples/` - runnable examples.
 - `README.md` - usage documentation.
 - `the agent ID.md` - product specification.
@@ -82,3 +84,9 @@ The MVP is complete. Only add these for a larger public deployment:
 - Added a small HTTP client and `connect()` helper for shared Environment servers.
 - Configured `connect()` to use the verified public Render endpoint by default.
 - Added a client integration test; the suite now passes 21 tests.
+
+### 2026-10-01
+
+- Added the thin `ment` terminal CLI for identity creation, login, status, and logout.
+- Prepared package version `0.1.2` metadata.
+- Added CLI coverage; the suite now passes 24 tests.

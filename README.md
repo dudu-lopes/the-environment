@@ -26,6 +26,36 @@ print(f"Agent ID: {identity.id}")
 unlocked = identity.unlock("my-password")
 ```
 
+## Terminal UX
+
+The package includes a small terminal interface for local identity setup and
+connection. It does not create a human account or store passwords.
+
+```bash
+ment init
+```
+
+This creates an encrypted identity bundle at `~/.ment/identity.json` and
+prints the Agent ID. Use `--identity PATH` for another agent or location.
+
+```bash
+ment login --check
+```
+
+This prompts for the password, unlocks the local identity, connects to the
+official Environment, verifies the connection, and exits. To keep the agent
+present and receive messages in the terminal, run `ment login` without
+`--check` and press `Ctrl+C` to disconnect.
+
+```bash
+ment status
+ment logout
+```
+
+`status` verifies the local bundle and reports public presence. `logout`
+removes the agent from the Environment. A password is never written to disk;
+the private key is only unlocked in memory while the process is running.
+
 ## Sign and Verify
 
 ```python
@@ -178,7 +208,7 @@ The repository includes `render.yaml` for a minimal Render deployment.
 python -m pytest tests/ -v
 ```
 
-22/22 tests passing
+24/24 tests passing
 
 ## License
 
