@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hmac
+import base64
 from dataclasses import dataclass, field, replace
 from hashlib import sha256
 import json
@@ -27,6 +28,7 @@ SCRYPT_R = 8
 SCRYPT_P = 1
 MAX_PASSWORD_LENGTH = 1024
 MAX_STRING_LENGTH = 4096
+PAIRING_TOKEN_VERSION = "ment1"
 
 
 def _require_text(value: str, name: str, max_length: int = MAX_STRING_LENGTH) -> str:
@@ -171,6 +173,100 @@ class UnlockedIdentity:
     def sign(self, value: Any) -> str:
         """Sign data without asking for the password again."""
         return self._private_key.sign(_canonical_bytes(value)).hex()
+
+
+@dataclass(frozen=True)
+class PairingToken:
+    """A short-lived, single-purpose invitation for another agent.
+
+    The token is self-contained and signed by the issuer.  It contains no
+    password or private key.  The Environment consumes its nonce on first
+    use, so a recipient only needs the printed token to join once.
+    """
+
+    name: str
+    issuer_id: str
+    issuer_public_key: str
+    expires_at: int
+    nonce: str
+    signature: str
+
+    @classmethod
+    def create(
+        cls,
+        identity: UnlockedIdentity,
+        name: str,
+        ttl_seconds: int = 300,
+    ) -> "PairingToken":
+        _require_text(name, "name")
+        if ttl_seconds <= 0 or ttl_seconds > 86_400:
+            raise ValueError("ttl_seconds must be between 1 and 86400")
+        payload = {
+            "v": PAIRING_TOKEN_VERSION,
+            "name": name,
+            "issuer_id": identity.id,
+            "issuer_public_key": identity.public_key,
+            "expires_at": int(time.time()) + ttl_seconds,
+            "nonce": secrets.token_urlsafe(24),
+        }
+        return cls(
+            name=payload["name"],
+            issuer_id=payload["issuer_id"],
+            issuer_public_key=payload["issuer_public_key"],
+            expires_at=payload["expires_at"],
+            nonce=payload["nonce"],
+            signature=identity.sign(payload),
+        )
+
+    def _payload(self) -> dict[str, Any]:
+        return {
+            "v": PAIRING_TOKEN_VERSION,
+            "name": self.name,
+            "issuer_id": self.issuer_id,
+            "issuer_public_key": self.issuer_public_key,
+            "expires_at": self.expires_at,
+            "nonce": self.nonce,
+        }
+
+    def encode(self) -> str:
+        payload = base64.urlsafe_b64encode(_canonical_bytes(self._payload())).decode().rstrip("=")
+        signature = base64.urlsafe_b64encode(bytes.fromhex(self.signature)).decode().rstrip("=")
+        return f"{PAIRING_TOKEN_VERSION}.{payload}.{signature}"
+
+    @classmethod
+    def decode(cls, value: str) -> "PairingToken":
+        _require_text(value, "token", 16_384)
+        parts = value.split(".")
+        if len(parts) != 3 or parts[0] != PAIRING_TOKEN_VERSION:
+            raise ValueError("invalid pairing token")
+        try:
+            padding = "=" * (-len(parts[1]) % 4)
+            payload = json.loads(base64.urlsafe_b64decode(parts[1] + padding))
+            padding = "=" * (-len(parts[2]) % 4)
+            signature = base64.urlsafe_b64decode(parts[2] + padding).hex()
+        except (ValueError, TypeError, UnicodeDecodeError, json.JSONDecodeError):
+            raise ValueError("invalid pairing token") from None
+        if not isinstance(payload, dict) or payload.get("v") != PAIRING_TOKEN_VERSION:
+            raise ValueError("invalid pairing token payload")
+        token = cls(
+            name=_require_text(payload.get("name"), "token name"),
+            issuer_id=_require_text(payload.get("issuer_id"), "issuer_id"),
+            issuer_public_key=_require_text(payload.get("issuer_public_key"), "issuer_public_key"),
+            expires_at=int(payload["expires_at"]),
+            nonce=_require_text(payload.get("nonce"), "nonce"),
+            signature=signature,
+        )
+        if token._payload() != payload:
+            raise ValueError("invalid pairing token payload")
+        return token
+
+    def verify(self, now: int | None = None) -> bool:
+        current = int(time.time()) if now is None else now
+        return (
+            self.expires_at >= current
+            and verify_identity(self.issuer_id, self.issuer_public_key)
+            and verify_signature(self.issuer_public_key, self._payload(), self.signature)
+        )
 
 
 def create_identity(password: str, H: str = DEFAULT_H) -> AgentIdentity:

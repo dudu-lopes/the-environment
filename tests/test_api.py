@@ -4,7 +4,7 @@ import unittest
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
-from ment import Message, connect, create_identity, create_server
+from ment import Message, PairingToken, connect, create_identity, create_server
 
 
 class ApiTests(unittest.TestCase):
@@ -87,6 +87,15 @@ class ApiTests(unittest.TestCase):
         received = client.receive(receiver.id)
         self.assertEqual(received[0].content, {"hello": "client"})
         self.assertTrue(received[0].verify(sender.public_key))
+
+    def test_one_time_pairing_token_joins_without_password(self) -> None:
+        issuer = create_identity("issuer password")
+        token = PairingToken.create(issuer.unlock("issuer password"), "chatgpt")
+        paired = connect(self.base_url).pair(token.encode(), capabilities=["chat"])
+        self.assertTrue(paired["paired"])
+        self.assertEqual(paired["pairing_name"], "chatgpt")
+        with self.assertRaises(ValueError):
+            connect(self.base_url).pair(token.encode())
 
 
 if __name__ == "__main__":

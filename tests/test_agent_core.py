@@ -3,6 +3,7 @@ import unittest
 from ment import (
     DEFAULT_H,
     Message,
+    PairingToken,
     create_identity,
     derive_id,
     verify_identity,
@@ -11,6 +12,14 @@ from ment import (
 
 
 class IdentityTests(unittest.TestCase):
+    def test_pairing_token_is_signed_and_round_trips(self) -> None:
+        identity = create_identity("pairing password")
+        token = PairingToken.create(identity.unlock("pairing password"), "chatgpt")
+        restored = PairingToken.decode(token.encode())
+        self.assertEqual(restored.name, "chatgpt")
+        self.assertEqual(restored.issuer_id, identity.id)
+        self.assertTrue(restored.verify())
+
     def test_identity_uses_a_random_public_key(self) -> None:
         first = create_identity("same password")
         second = create_identity("same password")

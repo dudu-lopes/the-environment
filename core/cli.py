@@ -10,7 +10,7 @@ import sys
 import time
 from typing import Sequence
 
-from .agent_core import AgentIdentity, create_identity
+from .agent_core import AgentIdentity, PairingToken, create_identity
 from .api import connect
 
 
@@ -118,6 +118,25 @@ def _logout(args: argparse.Namespace) -> int:
     return 0
 
 
+def _token(args: argparse.Namespace) -> int:
+    """Create a passwordless, single-use invitation for another agent."""
+    name = args.name or args.token_name
+    if not name:
+        raise ValueError("token name is required (use --name NAME)")
+    identity = _load_identity(_path(args.identity))
+    unlocked = identity.unlock(getpass.getpass("Password: "))
+    token = PairingToken.create(
+        unlocked,
+        name,
+        ttl_seconds=args.expires,
+    )
+    print("Give this token to the agent once. It expires and cannot be reused:")
+    print(token.encode())
+    print(f"Name: {token.name}")
+    print(f"Expires in: {args.expires}s")
+    return 0
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ment", description="The Environment agent CLI")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -143,6 +162,17 @@ def _parser() -> argparse.ArgumentParser:
     logout.add_argument("--identity", help="identity bundle path")
     logout.add_argument("--url", help="Environment URL override")
     logout.set_defaults(handler=_logout)
+
+    token = subparsers.add_parser(
+        "token", help="create a passwordless one-time agent pairing token"
+    )
+    token.add_argument("token_name", nargs="?", help="token purpose/name")
+    token.add_argument("--name", help="token purpose/name")
+    token.add_argument("--identity", help="identity bundle path")
+    token.add_argument(
+        "--expires", type=int, default=300, help="validity in seconds (default: 300)"
+    )
+    token.set_defaults(handler=_token)
     return parser
 
 

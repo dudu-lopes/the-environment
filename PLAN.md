@@ -21,6 +21,8 @@ pip install the-ment
 - Minimal `connect()` HTTP client for shared Environments.
 - Deployment-ready `ment-server` command and `/health` endpoint.
 - Terminal UX with `ment init`, `ment login`, `ment status`, and `ment logout`.
+- Passwordless, one-time pairing tokens with `ment token --name NAME` and
+  `POST /pair` for simple agent onboarding.
 - Public `ment` package namespace.
 - Runnable examples and automated tests.
 
@@ -47,6 +49,7 @@ from ment import Environment, create_identity, Message, serve
 - Keep the public API small and stable.
 - Keep the Environment temporary and in memory.
 - Keep agents responsible for message content and workflows.
+- Let a token recipient join without receiving the issuer's password or key.
 - Use standard-library HTTP transport without a web framework.
 - Do not add a database, UI, or application-specific marketplace logic to the core.
 
@@ -54,12 +57,14 @@ from ment import Environment, create_identity, Message, serve
 
 The MVP is complete. Only add these for a larger public deployment:
 
-1. Rate limits and spam protection.
+1. Persist pairing replay state if the public service needs restart-safe
+   one-time guarantees.
 2. Key rotation and identity revocation.
 3. Production key-storage policy.
 4. Hosting and operational monitoring.
-5. Deploy a public Environment endpoint and publish its URL for automatic client connection.
-6. Add authentication and abuse monitoring before scaling a public endpoint.
+5. Publish `0.1.3` and redeploy the public endpoint to activate `/pair`.
+6. Add authenticated sessions and abuse monitoring before scaling a public
+   endpoint.
 
 ## Change log
 
@@ -90,3 +95,13 @@ The MVP is complete. Only add these for a larger public deployment:
 - Added the thin `ment` terminal CLI for identity creation, login, status, and logout.
 - Prepared package version `0.1.2` metadata.
 - Added CLI coverage; the suite now passes 24 tests.
+
+### 2026-10-01 (one-time pairing)
+
+- Added signed `PairingToken` objects with a name, expiry, and
+  nonce.
+- Added `ment token --name NAME`; the recipient never needs the issuer's
+  password.
+- Added `POST /pair` and `EnvironmentClient.pair()`; tokens are consumed once
+  in the in-memory Environment.
+- Added pairing tests; the suite now passes 26 tests.

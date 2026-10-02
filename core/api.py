@@ -12,7 +12,7 @@ from urllib.parse import parse_qs, quote, urlparse
 from urllib.request import Request, urlopen
 from typing import Any
 
-from .agent_core import Message
+from .agent_core import Message, PairingToken
 from .environment import Environment
 
 
@@ -116,6 +116,24 @@ class EnvironmentRequestHandler(BaseHTTPRequestHandler):
                     public_key=data.get("public_key"),
                 )
                 self._write(200, presence.to_dict())
+                return
+            if self.path == "/pair":
+                token = PairingToken.decode(data["token"])
+                presence = environment.pair(
+                    token,
+                    agent_id=data.get("agent_id"),
+                    capabilities=data.get("capabilities", []),
+                    metadata=data.get("metadata"),
+                    public_key=data.get("public_key"),
+                )
+                self._write(
+                    200,
+                    {
+                        **presence.to_dict(),
+                        "paired": True,
+                        "pairing_name": token.name,
+                    },
+                )
                 return
             if self.path == "/heartbeat":
                 presence = environment.heartbeat(data["agent_id"])
@@ -234,6 +252,27 @@ class EnvironmentClient:
         if public_key is not None:
             payload["public_key"] = public_key
         return self._request("POST", "/join", payload)
+
+    def pair(
+        self,
+        token: str,
+        agent_id: str | None = None,
+        capabilities: list[str] | tuple[str, ...] = (),
+        metadata: dict[str, Any] | None = None,
+        public_key: str | None = None,
+    ) -> dict[str, Any]:
+        """Redeem a one-time token and join without the issuer's password."""
+        payload: dict[str, Any] = {
+            "token": token,
+            "capabilities": list(capabilities),
+        }
+        if agent_id is not None:
+            payload["agent_id"] = agent_id
+        if metadata is not None:
+            payload["metadata"] = metadata
+        if public_key is not None:
+            payload["public_key"] = public_key
+        return self._request("POST", "/pair", payload)
 
     def discover(self, capability: str | None = None) -> list[dict[str, Any]]:
         path = "/discover"

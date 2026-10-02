@@ -4,9 +4,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import time
+import threading
 from typing import Any
 
-from core.agent_core import Message, verify_identity
+from core.agent_core import Message, PairingToken, verify_identity
+import secrets
 
 
 def _now_ms() -> int:
@@ -54,6 +56,8 @@ class Environment:
         self.default_ttl_ms = default_ttl_ms
         self._agents: dict[str, Presence] = {}
         self._mailboxes: dict[str, list[Message]] = {}
+        self._used_pairings: set[str] = set()
+        self._pairing_lock = threading.Lock()
 
     def _prune(self, now: int) -> None:
         expired = [agent_id for agent_id, p in self._agents.items() if p.expires_at <= now]
@@ -184,3 +188,43 @@ class Environment:
         messages = self._mailboxes[agent_id]
         self._mailboxes[agent_id] = []
         return messages
+
+    def pair(
+        self,
+        token: PairingToken,
+        agent_id: str | None = None,
+        capabilities: list[str] | tuple[str, ...] = (),
+        metadata: dict[str, Any] | None = None,
+        public_key: str | None = None,
+        now: int | None = None,
+    ) -> Presence:
+        """Consume a one-time pairing token and join an agent.
+
+        The recipient does not need the issuer's password. It may provide its
+        own public key for signed messages; otherwise the server creates a
+        temporary session ID for simple integrations.
+        """
+        current = _now_ms() if now is None else now
+        if not token.verify(current // 1000):
+            raise ValueError("pairing token is invalid or expired")
+        if agent_id is None:
+            agent_id = f"agent-{secrets.token_urlsafe(12)}"
+        else:
+            agent_id = _text(agent_id, "agent_id")
+        if public_key is not None and not verify_identity(agent_id, public_key):
+            raise ValueError("public_key does not match agent_id")
+        pair_metadata = dict(metadata or {})
+        pair_metadata.setdefault("paired_by", token.issuer_id)
+        pair_metadata.setdefault("pairing_name", token.name)
+        with self._pairing_lock:
+            if token.nonce in self._used_pairings:
+                raise ValueError("pairing token has already been used")
+            presence = self.join(
+                agent_id,
+                capabilities,
+                pair_metadata,
+                public_key=public_key,
+                now=current,
+            )
+            self._used_pairings.add(token.nonce)
+            return presence

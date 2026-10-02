@@ -4,6 +4,7 @@ from .agent_core import (
     DEFAULT_H,
     AgentIdentity,
     Message,
+    PairingToken,
     UnlockedIdentity,
     create_identity,
     derive_id,
@@ -17,6 +18,7 @@ __all__ = [
     "DEFAULT_H",
     "AgentIdentity",
     "Message",
+    "PairingToken",
     "UnlockedIdentity",
     "create_identity",
     "derive_id",
@@ -32,4 +34,4 @@ __all__ = [
     "serve",
 ]
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
